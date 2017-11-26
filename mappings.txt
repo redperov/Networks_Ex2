@@ -1,0 +1,2 @@
+google.com A 1.2.3.4
+amazon.com A 3.3.3.3
