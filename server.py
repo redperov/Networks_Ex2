@@ -1,20 +1,39 @@
-import sys
-from cache import Cache, Record
-from socket import socket, AF_INET, SOCK_DGRAM
+from cache import Cache
 
-# Get command line arguments.
-is_resolver = sys.argv[1]
-file_path = sys.argv[2]
 
-# Load initial data into the cache from the mappings file.
-server_cache = Cache()
-server_cache.load_file(file_path)
+class Server(object):
+    def __init__(self, is_resolver, file_path):
+        """
+        Constructor.
+        :param is_resolver: is the server a resolver
+        :param file_path: mappings file path
+        """
+        if is_resolver == "y":
+            self._is_resolver = True
+        else:
+            self._is_resolver = False
 
-s = socket(AF_INET, SOCK_DGRAM)
-source_ip = '127.0.0.1'
-source_port = 12345
-s.bind((source_ip, source_port))
-while True:
-    data, sender_info = s.recvfrom(2048)
-    print "Message: ", data, " from: ", sender_info
-    s.sendto(data.upper(), sender_info)
+        # Load initial data into the cache from the mappings file.
+        self._cache = Cache()
+        self._cache.load_file(file_path)
+
+    def handle_request(self, request):
+        """
+        Handles the client's request.
+        :param request: request in format: [domain] [type]
+        :return: record
+        """
+        name, request_type = request.split()
+
+        # check if the answer exists in the cache.
+        record = self._cache.check_record(name, request_type)
+
+        if record is not None:
+            return record
+        elif self._is_resolver:
+            pass  # TODO implement
+        else:
+            pass  # TODO implement
+
+
+
