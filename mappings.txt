@@ -1,2 +1,2 @@
-google.com A 1.2.3.4
-amazon.com A 3.3.3.3
+google.com A 1.2.3.4 5432
+amazon.com A 3.3.3.3 4000
