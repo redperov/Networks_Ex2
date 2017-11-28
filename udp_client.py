@@ -1,5 +1,6 @@
 import sys
-from parser import parse_ip_port
+from parser_commands import parse_ip_port
+from dns import DnsRequest
 from socket import socket, AF_INET, SOCK_DGRAM
 
 # Get command line arguments.
@@ -8,10 +9,12 @@ dest_ip, dest_port = parse_ip_port(sys.argv[1])
 
 # Create a UDP socket.
 s = socket(AF_INET, SOCK_DGRAM)
+
 msg = raw_input("Message to send: ")
 while not msg == 'quit':
+    # Create a dns request.
     s.sendto(msg, (dest_ip, dest_port))
-    data, _ = s.recvfrom(2048)
-    print "Server sent: ", data
+    response, _ = s.recvfrom(2048)
+    print "Server sent: ", response
     msg = raw_input("Message to send: ")
 s.close()

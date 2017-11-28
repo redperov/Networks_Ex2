@@ -20,3 +20,13 @@ def parse_ip_port(str_input):
     port = int(str_input.split(':')[1])
 
     return ip, port
+
+
+def parse_request(str_input):
+    """
+    Parses the request into domain and request type
+    :param str_input: string input
+    :return: domain, request type
+    """
+    domain, request_type = str_input.split()
+    return domain, request_type
