@@ -1,30 +1,7 @@
 import sys
+from parser import *
 from cache import Cache
 from socket import socket, AF_INET, SOCK_DGRAM
-
-
-def parse_is_resolver(str_input):
-    """
-    Parses the is resolver answer from string to boolean.
-    :param str_answer: is resolver string
-    :return: boolean
-    """
-    if str_input == "y":
-        return True
-    else:
-        return False
-
-
-def parse_ip_port(str_input):
-    """
-    Parses the ip and port from string to separate values
-    :param str_input: string input
-    :return: [ip, port]
-    """
-    ip = str_input.split(':')[0]
-    port = int(str_input.split(':')[1])
-
-    return ip, port
 
 
 def handle_request(request):
@@ -47,7 +24,7 @@ def handle_request(request):
 # Get command line arguments.
 # The format: [is_resolver] [ip:port] [root_ip:root_port] [mappings_path]
 is_resolver = parse_is_resolver(sys.argv[1])
-my_ip, my_port = parse_ip_port(sys.argv[2])
+source_ip, source_port = parse_ip_port(sys.argv[2])
 root_ip, root_port = parse_ip_port(sys.argv[3])
 file_path = sys.argv[4]
 
@@ -58,8 +35,6 @@ cache.load_file(file_path)
 # Create a UDP socket.
 s = socket(AF_INET, SOCK_DGRAM)
 
-source_ip = '127.0.0.1'
-source_port = 12345
 s.bind((source_ip, source_port))
 while True:
     request, sender_info = s.recvfrom(2048)
