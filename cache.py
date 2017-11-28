@@ -18,6 +18,7 @@ class Cache(object):
                 new_record = Record(line[0], line[1], line[2], line[3])
                 new_key = "{0},{1}".format(new_record.get_domain(), new_record.get_record_type())
                 self._records[new_key] = new_record
+                print new_key
 
     def add_record(self, record):
         """
