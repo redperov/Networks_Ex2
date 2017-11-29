@@ -1,5 +1,4 @@
 class Cache(object):
-
     def __init__(self):
         """
         Constructor.
@@ -37,12 +36,11 @@ class Cache(object):
         """
         key = "{0},{1}".format(domain, request_type)
         if key in self._records:
-                return self._records[key]
+            return self._records[key]
         return None
 
 
 class Record(object):
-
     def __init__(self, domain, record_type, value, ttl):
         """
         Constructor.
@@ -112,5 +110,3 @@ class Record(object):
 
     def __str__(self):
         return "{0} {1} {2} {3}".format(self.get_domain(), self.get_record_type(), self.get_value(), self.get_ttl())
-
-

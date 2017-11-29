@@ -50,7 +50,7 @@ def local_search(domain, request_type):
     :param request_type: request type
     :return: response
     """
-    response = []
+    response = {}
 
     # Handle a request of type A
     if request_type == "A":
@@ -59,7 +59,7 @@ def local_search(domain, request_type):
         record = cache.check_record(domain, "A")
 
         if record is not None:
-            response.append(response)
+            response["A"] = record
             return response
 
         else:
@@ -67,25 +67,43 @@ def local_search(domain, request_type):
             record, is_final = ns_search(domain)
 
             if record is not None:
-                response.append(record)
+                response["NS"] = record
                 # TODO check if there might be a case when an NS record exists, but its ip address record doesn't exist
                 glued_record = cache.check_record(record.get_domain(), "A")
-                response.append(glued_record)
+                response["A"] = glued_record
                 return response
 
     else:  # Handle a request of type NS
         record, is_final = ns_search(domain)
 
         if record is not None:
-            response.append(record)
+            response["NS"] = record
             # If the NS record is not final, add an ip record as well.
             if not is_final:
                 glued_record = cache.check_record(record.get_domain(), "A")
-                response.append(glued_record)
+                response["A"] = glued_record
             return response
 
     # Couldn't find any answer in the local storage.
     return None
+
+
+def resolve(local_response, client_request):
+
+    # Check if I have another server to ask.
+    if not local_response:
+        pass  # TODO ask the root
+
+    # Get the info needed to ask the next server.
+    record = parse_to_record(local_response)
+    dest_ip = record.get_ip()
+    dest_port = record.get_port()
+
+    # Send request to the next server.
+    s.sendto(client_request, (dest_ip, dest_port))
+    response, _ = s.recvfrom(2048)
+    print "The next server returned:", response
+
 
 
 def handle_request(client_request):
@@ -104,14 +122,17 @@ def handle_request(client_request):
         # Check if the answer is final, or this is not a resolver.
         if len(response) == 1 or not is_resolver:
             return response
-        else:
-            pass  # TODO implement resolver search
+        else:  # The response is of length 2 and this is a resolver.
+            response = resolve(response)
+            return response
 
     else:  # If no answer was found in the local cache.
-        if is_root:
-            return "Don't know"
-        else:
-            pass  # TODO implement ask_root()
+        if is_resolver:
+            response = resolve(None)
+            return response
+
+        else:  # No answer was found, and this is not a resolver
+            return None
 
 
 def check_is_root():
@@ -141,9 +162,12 @@ cache.load_file(file_path)
 # Create a UDP socket.
 s = socket(AF_INET, SOCK_DGRAM)
 
+# Bind socket
 s.bind((source_ip, source_port))
+
 while True:
     request, sender_info = s.recvfrom(2048)
     print "Message: ", request, " from: ", sender_info
-    answer = str(handle_request(request))
-    s.sendto(answer, sender_info)
+    answer = handle_request(request)
+    str_answer = parse_answer(answer)
+    s.sendto(str_answer, sender_info)
