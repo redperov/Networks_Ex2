@@ -89,21 +89,37 @@ def local_search(domain, request_type):
 
 
 def resolve(local_response, client_request):
-
     # Check if I have another server to ask.
     if not local_response:
         pass  # TODO ask the root
 
-    # Get the info needed to ask the next server.
-    record = parse_to_record(local_response)
-    dest_ip = record.get_ip()
-    dest_port = record.get_port()
+    # Extract A record from the local response.
+    a_record = local_response["A"]
+    record = parse_to_record(a_record)
 
-    # Send request to the next server.
-    s.sendto(client_request, (dest_ip, dest_port))
-    response, _ = s.recvfrom(2048)
-    print "The next server returned:", response
+    # Keep asking other servers until a final answer is received.
+    while True:
 
+        # Get the info needed to ask the next server.
+        dest_ip = record.get_ip()
+        dest_port = record.get_port()
+
+        # Send request to the next server.
+        s.sendto(client_request, (dest_ip, dest_port))
+        response, _ = s.recvfrom(2048)
+        # TODO delete that
+        print "The next server returned:", response
+        # Parse the answer into a records dictionary.
+        response_records = parse_to_dictionary(response)
+
+        # Check if received the final answer.
+        if len(response_records) == 1:
+            return response_records  # TODO should I return records instead of strings
+        elif response_records is None:  # If the next server didn't have an answer.
+            return None
+
+        # Extract A record from response records.
+        record = response_records["A"]
 
 
 def handle_request(client_request):

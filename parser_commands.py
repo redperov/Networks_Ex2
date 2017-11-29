@@ -35,14 +35,14 @@ def parse_request(str_input):
     return domain, request_type
 
 
-def parse_answer(list_answer):
+def parse_answer(dictionary_answer):
     """
-    Parses the list into a string format.
-    :param list_answer: list
-    :return: string format of a list
+    Parses a dictionary into a string format.
+    :param dictionary_answer: dictionary
+    :return: string format of a dictionary
     """
-    if list:
-        str_answer = '\n'.join(map(str, list_answer))
+    if dictionary_answer:
+        str_answer = '\n'.join("%r" % val for (key, val) in dictionary_answer.iteritems())
         return str_answer
     else:
         return "Don't know"
@@ -57,3 +57,20 @@ def parse_to_record(str_record):
     split_record = str_record.split()
     record = Record(split_record[0], split_record[1], split_record[2], split_record[3])
     return record
+
+
+def parse_to_dictionary(str_input):
+
+    records = {}
+    split_input = str_input.split('\n')
+
+    for item in split_input:
+
+        # Split to record fields.
+        split_item = item.split()
+
+        if split_item[1] == "A":
+            records["A"] = item
+        else:
+            records["NS"] = item
+    return records
