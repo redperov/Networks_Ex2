@@ -39,7 +39,7 @@ def parse_answer(dictionary_answer):
     """
     Parses a dictionary into a string format.
     :param dictionary_answer: dictionary
-    :return: string format of a dictionary
+    :return: string format of a dictionary, or a don't know message.
     """
     if dictionary_answer:
         str_answer = ""

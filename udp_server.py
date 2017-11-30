@@ -1,5 +1,4 @@
 import sys
-from dns import DnsRequest, DnsResponse
 from parser_commands import *
 from cache import Cache
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -40,7 +39,7 @@ def ns_search(domain):
 
         split_domain.pop(0)
 
-    return None
+    return None, False
 
 
 def local_search(domain, request_type):
@@ -114,18 +113,24 @@ def resolve(local_response, client_request):
         s.sendto(client_request, (dest_ip, dest_port))
         response, _ = s.recvfrom(2048)
         # TODO delete that
-        print "The next server returned:", response
+        print "The next server returned:\n", response
+
+        # If the next server didn't have an answer.
+        if response == "Don't know":
+            return None
+
         # Parse the answer into a records dictionary.
         response_records = parse_to_dictionary(response)
 
         # Check if received the final answer.
         if len(response_records) == 1:
             return response_records  # TODO should I return records instead of strings
-        elif response_records is None:  # If the next server didn't have an answer.
-            return None
 
         # Extract A record from response records.
-        record = response_records["A"]
+        str_record = response_records["A"]
+
+        # Parse string record into record object.
+        record = parse_to_record(str_record)
 
         # Get the info needed to ask the next server.
         dest_ip = record.get_ip()
@@ -140,7 +145,7 @@ def handle_request(client_request):
     """
     domain, request_type = parse_request(client_request)
 
-    # Perform local server search for answer.
+    # Perform a local server search for the closest answer it has.
     response = local_search(domain, request_type)
 
     # If an answer was found.

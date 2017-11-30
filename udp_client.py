@@ -1,6 +1,5 @@
 import sys
 from parser_commands import parse_ip_port
-from dns import DnsRequest
 from socket import socket, AF_INET, SOCK_DGRAM
 
 # Get command line arguments.
