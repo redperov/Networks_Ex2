@@ -42,7 +42,11 @@ def parse_answer(dictionary_answer):
     :return: string format of a dictionary
     """
     if dictionary_answer:
-        str_answer = '\n'.join("%r" % val for (key, val) in dictionary_answer.iteritems())
+        str_answer = ""
+        for item in dictionary_answer:
+            str_answer += str(dictionary_answer[item])
+            str_answer += '\n'
+        str_answer = str_answer[: -1]
         return str_answer
     else:
         return "Don't know"
@@ -66,11 +70,14 @@ def parse_to_dictionary(str_input):
 
     for item in split_input:
 
-        # Split to record fields.
-        split_item = item.split()
+        # Check if item is a valid field.
+        if item != "":
+            # Split to record fields.
+            split_item = item.split()
 
-        if split_item[1] == "A":
-            records["A"] = item
-        else:
-            records["NS"] = item
+            if split_item[1] == "A":
+                records["A"] = item
+            else:
+                records["NS"] = item
+
     return records

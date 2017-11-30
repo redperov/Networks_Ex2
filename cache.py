@@ -64,7 +64,7 @@ class Record(object):
         if self._type == "A":
             formatted_value = self._value.split(':')
             self._ip = formatted_value[0]
-            self._port = formatted_value[1]
+            self._port = int(formatted_value[1])
 
     def get_domain(self):
         """

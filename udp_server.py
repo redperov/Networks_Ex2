@@ -64,12 +64,12 @@ def local_search(domain, request_type):
 
         else:
             # Look for an NS record instead.
-            record, is_final = ns_search(domain)
+            record, is_final = ns_search(domain)  # TODO remove the boolean if not needed
 
             if record is not None:
                 response["NS"] = record
                 # TODO check if there might be a case when an NS record exists, but its ip address record doesn't exist
-                glued_record = cache.check_record(record.get_domain(), "A")
+                glued_record = cache.check_record(record.get_value(), "A")
                 response["A"] = glued_record
                 return response
 
@@ -89,20 +89,26 @@ def local_search(domain, request_type):
 
 
 def resolve(local_response, client_request):
-    # Check if I have another server to ask.
-    if not local_response:
-        pass  # TODO ask the root
 
-    # Extract A record from the local response.
-    a_record = local_response["A"]
-    record = parse_to_record(a_record)
-
-    # Keep asking other servers until a final answer is received.
-    while True:
+    # Check if I can use the local response.
+    if local_response:
+        # Extract A record from the local response.
+        record = local_response["A"]
+        # record = parse_to_record(a_record)
 
         # Get the info needed to ask the next server.
         dest_ip = record.get_ip()
         dest_port = record.get_port()
+
+    elif not is_root:  # No local response, then ask root server.
+        dest_ip = root_ip
+        dest_port = root_port
+
+    else:  # Root server has not answer
+        return None
+
+    # Keep asking other servers until a final answer is received.
+    while True:
 
         # Send request to the next server.
         s.sendto(client_request, (dest_ip, dest_port))
@@ -120,6 +126,10 @@ def resolve(local_response, client_request):
 
         # Extract A record from response records.
         record = response_records["A"]
+
+        # Get the info needed to ask the next server.
+        dest_ip = record.get_ip()
+        dest_port = record.get_port()
 
 
 def handle_request(client_request):
@@ -139,12 +149,12 @@ def handle_request(client_request):
         if len(response) == 1 or not is_resolver:
             return response
         else:  # The response is of length 2 and this is a resolver.
-            response = resolve(response)
+            response = resolve(response, client_request)
             return response
 
     else:  # If no answer was found in the local cache.
-        if is_resolver:
-            response = resolve(None)
+        if is_resolver:  # If a resolver, ask the root.
+            response = resolve(None, client_request)
             return response
 
         else:  # No answer was found, and this is not a resolver
