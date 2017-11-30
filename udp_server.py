@@ -87,6 +87,20 @@ def local_search(domain, request_type):
     return None
 
 
+def save_records(records):
+    """
+    Saves new records in the cache.
+    :param records: dictionary of string records.
+    :return: None
+    """
+
+    for item in records:
+        str_record = records[item]
+        split_record = str_record.split()
+        record = Record(split_record[0], split_record[1], split_record[2], split_record[3])
+        cache.add_record(record)
+
+
 def resolve(local_response, client_request):
 
     # Check if I can use the local response.
@@ -121,6 +135,9 @@ def resolve(local_response, client_request):
 
         # Parse the answer into a records dictionary.
         response_records = parse_to_dictionary(response)
+
+        # Save received records in the cache. TODO what if received only NS, should I save it?
+        save_records(response_records)
 
         # Check if received the final answer.
         if len(response_records) == 1:

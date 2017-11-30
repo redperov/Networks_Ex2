@@ -13,11 +13,9 @@ class Cache(object):
         with open(file_path, "r") as mappings_file:
             for raw_line in mappings_file:
                 line = raw_line.split()
-                # store the domain as the key, and the rest as value.
+                # Add new record to the records dictionary.
                 new_record = Record(line[0], line[1], line[2], line[3])
-                new_key = "{0},{1}".format(new_record.get_domain(), new_record.get_record_type())
-                self._records[new_key] = new_record
-                print new_key
+                self.add_record(new_record)
 
     def add_record(self, record):
         """
@@ -25,7 +23,10 @@ class Cache(object):
         :param record: a new record
         :return: None
         """
-        self._records[record.get_domain()] = record
+        # Store the domain as the key, and the rest as value.
+        new_key = "{0},{1}".format(record.get_domain(), record.get_record_type())
+        self._records[new_key] = record
+        print new_key
 
     def check_record(self, domain, request_type):
         """
@@ -52,7 +53,7 @@ class Record(object):
         self._domain = domain
         self._type = record_type
         self._value = value
-        self._ttl = ttl
+        self._ttl = int(ttl)
 
         self._check_ip_port_split()
 
