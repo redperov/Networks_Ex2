@@ -53,10 +53,11 @@ while not msg == 'quit':
         # Perform a request to the server.
         s.sendto(msg, (dest_ip, dest_port))
         response, _ = s.recvfrom(2048)
-        print "Server sent: ", response
+        print "Server sent:\n", response
 
-        # Save the answer in the cache.
-        save_record(response)
+        if response != "Don't know":
+            # Save the answer in the cache.
+            save_record(response)
 
     msg = raw_input("Message to send: ")
 

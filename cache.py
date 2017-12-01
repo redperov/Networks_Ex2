@@ -1,4 +1,10 @@
+import time
+
+
 class Cache(object):
+    """
+    Acts as a cache that is used to store dns records, and retrieve when needed.
+    """
     def __init__(self):
         """
         Constructor.
@@ -28,6 +34,14 @@ class Cache(object):
         self._records[new_key] = record
         print new_key
 
+    def delete_record(self, key):
+        """
+        Deletes a record from the cache.
+        :param key: key of the record to delete
+        :return: None
+        """
+        del self._records[key]
+
     def check_record(self, domain, request_type):
         """
         Looks for the record in the cache.
@@ -37,11 +51,32 @@ class Cache(object):
         """
         key = "{0},{1}".format(domain, request_type)
         if key in self._records:
-            return self._records[key]
+            record = self._records[key]
+
+            record_start_time = record.get_start_time()
+            record_ttl = record.get_ttl()
+            current_time = time.time()
+            passed_time = current_time - record_start_time
+            # TODO delete that
+            print "Time passed:", passed_time
+
+            # Check if the record's TTL has passed.
+            if passed_time <= record_ttl:
+                return record
+            else:
+                # TODO delete that
+                print "Deleting record"
+                # Delete the record from the cache.
+                self.delete_record(key)
+
         return None
 
 
 class Record(object):
+    """
+    The object that is stored in the cache.
+    Holds the dns record's fields.
+    """
     def __init__(self, domain, record_type, value, ttl):
         """
         Constructor.
@@ -55,7 +90,11 @@ class Record(object):
         self._value = value
         self._ttl = int(ttl)
 
+        # If this is an A record, extract ip and port number.
         self._check_ip_port_split()
+
+        # Set the record's added time.
+        self._start_time = time.time()
 
     def _check_ip_port_split(self):
         """
@@ -108,6 +147,13 @@ class Record(object):
         :return: ttl
         """
         return self._ttl
+
+    def get_start_time(self):
+        """
+        Start time getter.
+        :return:
+        """
+        return self._start_time
 
     def __str__(self):
         return "{0} {1} {2} {3}".format(self.get_domain(), self.get_record_type(), self.get_value(), self.get_ttl())

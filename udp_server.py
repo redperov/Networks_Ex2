@@ -4,18 +4,26 @@ from cache import Cache
 from socket import socket, AF_INET, SOCK_DGRAM
 
 
-def ns_search(domain):
+def ns_search(domain, request_type):
     """
     Checks the cache to find the closest existing NS domain.
     :param domain: original domain
+    :param request_type: request type
     :return: NS record, boolean is it the final answer.
     """
 
     # Try searching the original domain.
     record = cache.check_record(domain, "NS")
 
+    # Check if can return the record.
     if record is not None:
-        return record, True
+        if request_type == "A":
+            # Check that the glued record exists.
+            a_record = cache.check_record(record.get_value(), "A")
+            if a_record:
+                return record, True
+        else:
+            return record, True
 
     # Split the domain into sub domains.
     split_domain = domain.split('.')
@@ -35,7 +43,10 @@ def ns_search(domain):
         record = cache.check_record(sub_domain, "NS")
 
         if record is not None:
-            return record, False
+            # Check that the glued record exists.
+            a_record = cache.check_record(record.get_value(), "A")
+            if a_record:
+                return record, False
 
         split_domain.pop(0)
 
@@ -63,7 +74,7 @@ def local_search(domain, request_type):
 
         else:
             # Look for an NS record instead.
-            record, is_final = ns_search(domain)  # TODO remove the boolean if not needed
+            record, is_final = ns_search(domain, request_type)  # TODO remove the boolean if not needed
 
             if record is not None:
                 response["NS"] = record
@@ -73,7 +84,7 @@ def local_search(domain, request_type):
                 return response
 
     else:  # Handle a request of type NS
-        record, is_final = ns_search(domain)
+        record, is_final = ns_search(domain, request_type)
 
         if record is not None:
             response["NS"] = record
@@ -93,7 +104,7 @@ def save_records(records):
     :param records: dictionary of string records.
     :return: None
     """
-
+    # TODO decide if to save a single NS record or not
     for item in records:
         str_record = records[item]
         split_record = str_record.split()
@@ -102,7 +113,6 @@ def save_records(records):
 
 
 def resolve(local_response, client_request):
-
     # Check if I can use the local response.
     if local_response:
         # Extract A record from the local response.
@@ -200,10 +210,10 @@ source_ip, source_port = parse_ip_port(sys.argv[2])
 root_ip, root_port = parse_ip_port(sys.argv[3])
 file_path = sys.argv[4]
 
-# Check if this server is a root
+# Check if this server is a root.
 is_root = check_is_root()
 
-# Create a cache
+# Create a cache.
 cache = Cache()
 cache.load_file(file_path)
 
