@@ -32,7 +32,6 @@ class Cache(object):
         # Store the domain as the key, and the rest as value.
         new_key = "{0},{1}".format(record.get_domain(), record.get_record_type())
         self._records[new_key] = record
-        print new_key
 
     def delete_record(self, key):
         """
@@ -57,15 +56,11 @@ class Cache(object):
             record_ttl = record.get_ttl()
             current_time = time.time()
             passed_time = current_time - record_start_time
-            # TODO delete that
-            print "Time passed:", passed_time
 
             # Check if the record's TTL has passed.
             if passed_time <= record_ttl:
                 return record
             else:
-                # TODO delete that
-                print "Deleting record"
                 # Delete the record from the cache.
                 self.delete_record(key)
 

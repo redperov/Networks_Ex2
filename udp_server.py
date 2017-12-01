@@ -90,7 +90,7 @@ def local_search(domain, request_type):
             response["NS"] = record
             # If the NS record is not final, add an ip record as well.
             if not is_final:
-                glued_record = cache.check_record(record.get_domain(), "A")
+                glued_record = cache.check_record(record.get_value(), "A")
                 response["A"] = glued_record
             return response
 
@@ -104,7 +104,6 @@ def save_records(records):
     :param records: dictionary of string records.
     :return: None
     """
-    # TODO decide if to save a single NS record or not
     for item in records:
         str_record = records[item]
         split_record = str_record.split()
