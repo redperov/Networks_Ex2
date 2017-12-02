@@ -64,7 +64,11 @@ def parse_to_record(str_record):
 
 
 def parse_to_dictionary(str_input):
-
+    """
+    Parses the records input into a dictionary.
+    :param str_input: string
+    :return: dictionary
+    """
     records = {}
     split_input = str_input.split('\n')
 

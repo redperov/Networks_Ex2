@@ -151,4 +151,8 @@ class Record(object):
         return self._start_time
 
     def __str__(self):
+        """
+        Parses the record object into  a string.
+        :return: String
+        """
         return "{0} {1} {2} {3}".format(self.get_domain(), self.get_record_type(), self.get_value(), self.get_ttl())
