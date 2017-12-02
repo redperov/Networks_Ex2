@@ -47,7 +47,7 @@ while not msg == 'quit':
 
     # If answer was found in the cache.
     if local_answer:
-        print str(local_answer)
+        print "Local answer:\n", str(local_answer)
 
     else:  # If no answer was found in the cache, ask the resolver server.
         # Perform a request to the server.

@@ -74,11 +74,10 @@ def local_search(domain, request_type):
 
         else:
             # Look for an NS record instead.
-            record, is_final = ns_search(domain, request_type)  # TODO remove the boolean if not needed
+            record, is_final = ns_search(domain, request_type)
 
             if record is not None:
                 response["NS"] = record
-                # TODO check if there might be a case when an NS record exists, but its ip address record doesn't exist
                 glued_record = cache.check_record(record.get_value(), "A")
                 response["A"] = glued_record
                 return response
@@ -135,8 +134,6 @@ def resolve(local_response, client_request):
         # Send request to the next server.
         s.sendto(client_request, (dest_ip, dest_port))
         response, _ = s.recvfrom(2048)
-        # TODO delete that
-        print "The next server returned:\n", response
 
         # If the next server didn't have an answer.
         if response == "Don't know":
@@ -145,12 +142,12 @@ def resolve(local_response, client_request):
         # Parse the answer into a records dictionary.
         response_records = parse_to_dictionary(response)
 
-        # Save received records in the cache. TODO what if received only NS, should I save it?
+        # Save received records in the cache.
         save_records(response_records)
 
         # Check if received the final answer.
         if len(response_records) == 1:
-            return response_records  # TODO should I return records instead of strings
+            return response_records
 
         # Extract A record from response records.
         str_record = response_records["A"]
